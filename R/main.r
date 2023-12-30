@@ -11,7 +11,7 @@ installed_libraries <- libs %in% rownames(
     installed.packages()
 )
 
-if(any(installed_libraries == F)){
+if (any(installed_libraries == F)) {
     install.packages(
         libs[!installed_libraries],
         dependencies = T
@@ -54,9 +54,12 @@ mumbai_centroid_sf <- sf::st_as_sf(
     mumbai_centroid,
     coords = c("Longitude", "Latitude"),
     crs = 4326
-    )
+) |>
+sf::st_transform(crs = 4087) # Added this line to avoid sf error
 
 # 3. CITY BUFFER
+
+# sf::sf_use_s2(F)
 
 mumbai_buffer <- sf::st_buffer(
     mumbai_centroid_sf,
@@ -95,6 +98,9 @@ mumbai_buffer <- sf::st_transform(
     )
 )
 
+
+plot(sf::st_geometry(mumbai_buffer))
+
 mumbai_builtup <- terra::crop(
     builtup_raster,
     terra::vect(mumbai_buffer),
@@ -115,23 +121,23 @@ sort(unique(vals$value))
 
 # 6. THEME, LABELS, COLORS
 
-theme_for_the_win <- function(){
+theme_for_the_win <- function() {
     theme_void() +
-    theme(
-        legend.position = "left",
-        legend.title = element_text(
-            size = 9, color = "grey20"
-        ),
-        legend.text = element_text(
-            size = 8, color = "grey20"
-        ),
-        plot.margin = unit(
-            c(
-                t = -1, r = -1,
-                b = -1, l = 1
-            ), "lines"
+        theme(
+            legend.position = "left",
+            legend.title = element_text(
+                size = 9, color = "grey20"
+            ),
+            legend.text = element_text(
+                size = 8, color = "grey20"
+            ),
+            plot.margin = unit(
+                c(
+                    t = -1, r = -1,
+                    b = -1, l = 1
+                ), "lines"
+            )
         )
-    )
 }
 
 labs <- c(
@@ -154,11 +160,11 @@ labs <- c(
 )
 
 cols <- c(
-    "grey80", "#718C6C", "#8AD86B", 
-    "#C1FFA1", "#01B7FF", "#FFD501", 
-    "#D28200", "#FE5900", "#FF0101", 
-    "#CE001B", "#7A000A", "#FF9FF4", 
-    "#FF67E4", "#F701FF", "#A601FF", 
+    "grey80", "#718C6C", "#8AD86B",
+    "#C1FFA1", "#01B7FF", "#FFD501",
+    "#D28200", "#FE5900", "#FF0101",
+    "#CE001B", "#7A000A", "#FF9FF4",
+    "#FF67E4", "#F701FF", "#A601FF",
     "#6E00FE"
 )
 
@@ -177,6 +183,7 @@ map <- ggplot() +
         na.value = "white",
         na.translate = FALSE
     ) +
+    coord_sf(crs = 4326) + # Added this line to have a nice circle shape
     guides(
         fill = guide_legend(
             direction = "vertical",
@@ -189,3 +196,12 @@ map <- ggplot() +
         title = "",
         caption = ""
     )
+
+ggsave(
+    "mumbai-builtup-new.png",
+    map,
+    width = 8,
+    height = 6,
+    units = "in",
+    bg = "white"
+)
