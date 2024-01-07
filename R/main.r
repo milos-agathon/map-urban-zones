@@ -54,8 +54,8 @@ mumbai_centroid_sf <- sf::st_as_sf(
     mumbai_centroid,
     coords = c("Longitude", "Latitude"),
     crs = 4326
-) |>
-sf::st_transform(crs = 4087) # Added this line to avoid sf error
+)
+# |> sf::st_transform(crs = 4087) # Added this line to avoid sf error in some instances
 
 # 3. CITY BUFFER
 
